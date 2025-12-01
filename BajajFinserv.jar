@@ -1,0 +1,54 @@
+import org.springframework.boot.*;
+import org.springframework.boot.autoconfigure.*;
+import org.springframework.web.bind.annotation.*;
+
+@SpringBootApplication
+@RestController
+public class BajajSpringBoot {
+    
+    public static void main(String[] args) {
+        SpringApplication.run(BajajSpringBoot.class, args);
+    }
+    
+    @GetMapping("/")
+    public String home() {
+        return """
+            <html>
+            <body>
+            <h1>Bajaj Finserv Health Submission</h1>
+            <p><b>JAR File:</b> bajaj-submission.jar</p>
+            <p><b>Status:</b> Ready for Submission</p>
+            <p><b>SQL Solution:</b> Included in JAR</p>
+            <p><b>GitHub:</b> https://github.com/your-username/bajaj-finserv</p>
+            </body>
+            </html>
+            """;
+    }
+    
+    @GetMapping("/sql")
+    public String getSql() {
+        return """
+            SELECT 
+                d.DEPARTMENT_NAME,
+                MAX(p.SALARY) as SALARY,
+                CONCAT(e.FIRST_NAME, ' ', e.LAST_NAME) as EMPLOYEE_NAME,
+                e.EMP_ID as EMPLOYEE_ID,
+                e.EMP_ID as EMP_ID,
+                TIMESTAMPDIFF(YEAR, e.DOB, CURDATE()) as AGE
+            FROM DEPARTMENT d
+            JOIN EMPLOYEE e ON d.DEPARTMENT_ID = e.DEPARTMENT
+            JOIN PAYMENTS p ON e.EMP_ID = p.EMP_ID
+            WHERE DAY(p.PAYMENT_TIME) != DAY(LAST_DAY(p.PAYMENT_TIME))
+            GROUP BY d.DEPARTMENT_ID, d.DEPARTMENT_NAME, 
+                     e.EMP_ID, e.FIRST_NAME, e.LAST_NAME, e.DOB
+            HAVING MAX(p.SALARY) = (
+                SELECT MAX(p2.SALARY)
+                FROM PAYMENTS p2
+                JOIN EMPLOYEE e2 ON p2.EMP_ID = e2.EMP_ID
+                WHERE e2.DEPARTMENT = e.DEPARTMENT
+                AND DAY(p2.PAYMENT_TIME) != DAY(LAST_DAY(p2.PAYMENT_TIME))
+            )
+            ORDER BY d.DEPARTMENT_NAME;
+            """;
+    }
+}
